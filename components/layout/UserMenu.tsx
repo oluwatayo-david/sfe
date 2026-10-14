@@ -16,7 +16,10 @@ export function UserMenu() {
   const [user, setUser] = useState<User>()
 
   useEffect(() => {
-    getMe().then((res) => setUser(res.data))
+    getMe()
+      .then((res) => setUser(res.data))
+      // The menu works without the user (avatar placeholder, no name), so a failed /me isn't fatal.
+      .catch(() => setUser(undefined))
   }, [])
 
   return (
