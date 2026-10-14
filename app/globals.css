@@ -17,6 +17,11 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+/* Stop the page scrolling behind a modal <dialog> (Drawer). */
+html:has(dialog[open]) {
+  overflow: hidden;
+}
+
 body {
   font-family: var(--font-sans);
   font-size: var(--text-base);
