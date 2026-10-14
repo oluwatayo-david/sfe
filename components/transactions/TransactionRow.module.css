@@ -1,16 +1,25 @@
+/*
+ * Fixed column widths keep status, amount and time aligned from row to row (each row is its own
+ * grid). The amount column fits ₦2,499,999,999.99.
+ */
 .row {
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) auto auto;
+  grid-template-columns: 40px minmax(0, 1fr) 7.5rem 11rem;
+  grid-template-areas:
+    'avatar main status amount'
+    'avatar main status time';
   align-items: center;
-  gap: var(--space-4);
+  column-gap: var(--space-4);
+  row-gap: 2px;
   width: 100%;
   min-height: 68px;
   padding: var(--space-3) var(--space-6);
   border: 0;
   border-bottom: 1px solid var(--color-border);
-  background: none;
+  background: var(--color-surface);
   text-align: left;
   cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out);
 }
 
 .row:last-child {
@@ -21,26 +30,30 @@
   background: var(--color-bg-subtle);
 }
 
-.icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-full);
-  background: var(--color-primary-soft);
-  color: var(--color-primary);
+.row:focus-visible {
+  position: relative;
+  outline-offset: -2px;
+}
+
+.avatar {
+  grid-area: avatar;
+  display: flex;
 }
 
 .main {
+  grid-area: main;
   min-width: 0;
 }
 
+/* One line, like the narration: on a 320px screen a wide amount leaves the title too narrow to wrap. */
 .title {
   display: block;
+  overflow: hidden;
   font-size: var(--text-md);
   font-weight: var(--weight-semibold);
   line-height: var(--leading-tight);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .narration {
@@ -53,13 +66,15 @@
   white-space: nowrap;
 }
 
-.end {
-  display: block;
-  text-align: right;
+.status {
+  grid-area: status;
+  justify-self: start;
 }
 
-.amount,
-.credit {
+.amount {
+  grid-area: amount;
+  align-self: end;
+  justify-self: end;
   font-size: var(--text-md);
   font-weight: var(--weight-semibold);
 }
@@ -68,10 +83,32 @@
   color: var(--color-success);
 }
 
-.meta {
-  display: block;
-  margin-top: var(--space-1);
+.time {
+  grid-area: time;
+  align-self: start;
+  justify-self: end;
   font-size: var(--text-xs);
   color: var(--color-text-subtle);
-  white-space: nowrap;
+}
+
+/* Narrow: amount over status on the right; the day heading already gives the date. */
+@media (max-width: 640px) {
+  .row {
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    grid-template-areas:
+      'avatar main amount'
+      'avatar main status';
+    column-gap: var(--space-3);
+    row-gap: var(--space-1);
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .status {
+    justify-self: end;
+    align-self: start;
+  }
+
+  .time {
+    display: none;
+  }
 }

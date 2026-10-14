@@ -16,12 +16,23 @@ export function UserMenu() {
   const [user, setUser] = useState<User>()
 
   useEffect(() => {
-    getMe().then((res) => setUser(res.data))
+    getMe()
+      .then((res) => setUser(res.data))
+      // The menu works without the user (avatar placeholder, no name), so a failed /me isn't fatal.
+      .catch(() => setUser(undefined))
   }, [])
 
   return (
     <div className={styles.menu}>
-      <button type="button" className={styles.trigger} onClick={() => setOpen(!open)} aria-expanded={open}>
+      <button
+        type="button"
+        className={styles.trigger}
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+        // The visible name is hidden on mobile and missing when /me fails, so name the button
+        // explicitly. It starts with the visible name so voice control can still target it.
+        aria-label={user ? `${user.firstName}, account menu` : 'Account menu'}
+      >
         <Avatar src={user?.avatarUrl ?? null} alt="" size="sm" />
         <span className={styles.name}>{user?.firstName}</span>
         <Icon name="chevron-down" size={16} />

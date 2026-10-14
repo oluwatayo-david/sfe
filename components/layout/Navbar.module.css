@@ -49,11 +49,34 @@
 }
 
 @media (max-width: 640px) {
-  .links {
-    display: none;
+  /* Links drop to a tab row under the logo instead of disappearing. */
+  .inner {
+    flex-wrap: wrap;
+    gap: 0;
+    height: auto;
   }
 
-  .inner {
-    justify-content: space-between;
+  .logo {
+    display: flex;
+    align-items: center;
+    height: var(--navbar-height);
+  }
+
+  .links {
+    order: 1;
+    flex-basis: calc(100% + 2 * var(--layout-gutter));
+    gap: var(--space-6);
+    margin: 0 calc(-1 * var(--layout-gutter));
+    padding: 0 var(--layout-gutter);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .link {
+    padding: var(--space-3) 0;
+    border-bottom: 2px solid transparent;
+  }
+
+  .active {
+    border-bottom-color: var(--color-primary);
   }
 }
