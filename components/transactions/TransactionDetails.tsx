@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import type { Transaction } from '@/types/api'
 import { Button, Icon, Money, Skeleton, StateMessage } from '@/components/ui'
 import { ApiError } from '@/lib/api/client'
@@ -62,6 +62,8 @@ export function TransactionDetails({ id, initial, onClose }: TransactionDetailsP
 
 function DetailsContent({ transaction: tx }: { transaction: Transaction }) {
   const credit = isCredit(tx.type)
+  const detailsHeadingId = useId()
+  const summaryHeadingId = useId()
 
   return (
     <div className={styles.details}>
@@ -77,8 +79,8 @@ function DetailsContent({ transaction: tx }: { transaction: Transaction }) {
         <TransactionStatusBadge status={tx.status} />
       </div>
 
-      <section aria-labelledby="details-heading">
-        <h3 id="details-heading" className={styles.sectionTitle}>
+      <section aria-labelledby={detailsHeadingId}>
+        <h3 id={detailsHeadingId} className={styles.sectionTitle}>
           Details
         </h3>
         <dl className={styles.list}>
@@ -113,8 +115,8 @@ function DetailsContent({ transaction: tx }: { transaction: Transaction }) {
         </dl>
       </section>
 
-      <section aria-labelledby="summary-heading">
-        <h3 id="summary-heading" className={styles.sectionTitle}>
+      <section aria-labelledby={summaryHeadingId}>
+        <h3 id={summaryHeadingId} className={styles.sectionTitle}>
           Summary
         </h3>
         <dl className={styles.list}>
