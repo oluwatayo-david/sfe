@@ -25,7 +25,7 @@ function rangeLabel({ page, limit, total }: PageMeta, shown: number) {
 /** The Transactions page. All state lives in the URL; the header and filters stay put in every state. */
 export function TransactionsView() {
   const router = useRouter()
-  const { params, setParams, linkFor } = useTransactionsParams()
+  const { params, setParams, setSearch, linkFor } = useTransactionsParams()
   const listQuery = useMemo(() => toListQuery(params), [params])
   const { data, isPending, isError, isPlaceholderData, refetch } = useTransactions(listQuery)
   const filtered = hasFilters(params)
@@ -79,6 +79,7 @@ export function TransactionsView() {
         type={params.type}
         status={params.status}
         showClear={filtered}
+        onSearch={setSearch}
         onChange={setParams}
         onClear={clearFilters}
       />

@@ -33,11 +33,25 @@ export function useTransactionsParams() {
     [router, pathname]
   )
 
+  /**
+   * Commit a search term. Starting a search adds a history entry (Back returns to the unfiltered
+   * list); refining it replaces that entry, so there's one entry per search, not per keystroke.
+   * Decided from the latest URL, so a debounced call that fires late still chooses correctly.
+   */
+  const setSearch = useCallback(
+    (q: string) => {
+      const current = latestSearch.current.get('q') ?? ''
+      if (q === current) return
+      setParams({ q }, { history: current ? 'replace' : 'push' })
+    },
+    [setParams]
+  )
+
   // For links (pagination): derived from the current render so hrefs are correct on first paint.
   const linkFor = useCallback(
     (patch: Patch) => `${pathname}${updateSearch(new URLSearchParams(searchParams.toString()), patch)}`,
     [pathname, searchParams]
   )
 
-  return { params, setParams, linkFor }
+  return { params, setParams, setSearch, linkFor }
 }

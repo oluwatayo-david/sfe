@@ -3,7 +3,6 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import type { TransactionStatus, TransactionType } from '@/types/api'
 import { Input, Select, type SelectOption } from '@/components/ui'
 import { TRANSACTION_STATUS_LABELS, TRANSACTION_TYPE_LABELS } from '@/lib/format'
-import type { NavigateOptions } from './useTransactionsParams'
 import styles from './TransactionFilters.module.css'
 
 export const SEARCH_DEBOUNCE_MS = 300
@@ -17,17 +16,19 @@ const TYPE_OPTIONS = toOptions('All types', TRANSACTION_TYPE_LABELS)
 const STATUS_OPTIONS = toOptions('All statuses', TRANSACTION_STATUS_LABELS)
 
 export interface FilterPatch {
-  q?: string | null
   type?: TransactionType | null
   status?: TransactionStatus | null
 }
 
 export interface TransactionFiltersProps {
+  /** The search term in the URL. */
   q: string
   type?: TransactionType
   status?: TransactionStatus
   showClear: boolean
-  onChange: (patch: FilterPatch, options?: NavigateOptions) => void
+  /** Called with the trimmed term once typing pauses (or on Enter). */
+  onSearch: (q: string) => void
+  onChange: (patch: FilterPatch) => void
   onClear: () => void
 }
 
@@ -36,47 +37,52 @@ export function TransactionFilters({
   type,
   status,
   showClear,
+  onSearch,
   onChange,
   onClear,
 }: TransactionFiltersProps) {
-  const [search, setSearch] = useState(q)
-  // The last search term we know the URL holds. When the URL's q differs from it, the change came
-  // from outside (Back, Clear filters), so the box adopts it. Our own debounced updates set it first,
-  // so a late URL update never overwrites what the user has typed since.
-  const [syncedQ, setSyncedQ] = useState(q)
-  if (q !== syncedQ) {
-    setSyncedQ(q)
-    setSearch(q)
+  // The box is local state so typing stays instant; the URL is updated after a pause.
+  const [text, setText] = useState(q)
+
+  // Sync the box from the URL only when the URL's q actually changes, and only if that change isn't
+  // our own search arriving (Back, a link or Clear filters elsewhere). Until the router applies a
+  // search, renders still see the old q; comparing against the previous q (not the box) means they
+  // never snap the box back or overwrite what the user has typed since.
+  const [prevQ, setPrevQ] = useState(q)
+  const [sentQ, setSentQ] = useState(q)
+  if (q !== prevQ) {
+    setPrevQ(q)
+    if (q !== sentQ) {
+      setSentQ(q)
+      setText(q)
+    }
   }
 
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
   useEffect(() => () => clearTimeout(timer.current), [])
 
-  const commitSearch = (value: string) => {
+  const commit = (value: string) => {
     clearTimeout(timer.current)
     const next = value.trim()
-    if (next === syncedQ) return
-    setSyncedQ(next)
-    // Starting a search adds a history entry (Back returns to the unfiltered list); refining it
-    // replaces that entry, so there's one entry per search rather than one per keystroke.
-    onChange({ q: next }, { history: syncedQ ? 'replace' : 'push' })
+    setSentQ(next)
+    onSearch(next)
   }
 
-  const handleSearchChange = (value: string) => {
-    setSearch(value)
+  const handleTextChange = (value: string) => {
+    setText(value)
     clearTimeout(timer.current)
-    timer.current = setTimeout(() => commitSearch(value), SEARCH_DEBOUNCE_MS)
+    timer.current = setTimeout(() => commit(value), SEARCH_DEBOUNCE_MS)
   }
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault()
-    commitSearch(search)
+    commit(text)
   }
 
   const handleClear = () => {
     clearTimeout(timer.current)
-    setSearch('')
-    setSyncedQ('')
+    setText('')
+    setSentQ('')
     onClear()
   }
 
@@ -89,8 +95,8 @@ export function TransactionFilters({
         placeholder="Search by reference, name or narration"
         autoComplete="off"
         maxLength={100}
-        value={search}
-        onChange={(event) => handleSearchChange(event.target.value)}
+        value={text}
+        onChange={(event) => handleTextChange(event.target.value)}
         fieldClassName={styles.search}
       />
       <Select

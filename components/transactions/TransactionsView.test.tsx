@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
@@ -176,6 +176,22 @@ describe('TransactionsView', () => {
     expect(await screen.findByText('1 result')).toBeInTheDocument()
     expect(nav.search).toBe('q=netflix')
     expect(listRequests.map((params) => params.get('q'))).toEqual(['netflix'])
+  })
+
+  it('pushes history when a search starts and replaces it while refining', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await screen.findByText('2 transactions')
+    const box = screen.getByRole('searchbox', { name: 'Search' })
+
+    await user.type(box, 'net')
+    await waitFor(() => expect(nav.push).toHaveBeenLastCalledWith('/transactions?q=net', { scroll: false }))
+
+    await user.type(box, 'flix')
+    await waitFor(() =>
+      expect(nav.replace).toHaveBeenLastCalledWith('/transactions?q=netflix', { scroll: false })
+    )
+    expect(nav.push).toHaveBeenCalledTimes(1)
   })
 
   it('restores filters from the URL and clears them from the empty state', async () => {
