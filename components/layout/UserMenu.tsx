@@ -24,7 +24,15 @@ export function UserMenu() {
 
   return (
     <div className={styles.menu}>
-      <button type="button" className={styles.trigger} onClick={() => setOpen(!open)} aria-expanded={open}>
+      <button
+        type="button"
+        className={styles.trigger}
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+        // The visible name is hidden on mobile and missing when /me fails, so name the button
+        // explicitly. It starts with the visible name so voice control can still target it.
+        aria-label={user ? `${user.firstName}, account menu` : 'Account menu'}
+      >
         <Avatar src={user?.avatarUrl ?? null} alt="" size="sm" />
         <span className={styles.name}>{user?.firstName}</span>
         <Icon name="chevron-down" size={16} />
