@@ -1,51 +1,41 @@
-import type { Transaction, TransactionType } from '@/types/api'
-import { Icon, type IconName, Money } from '@/components/ui'
-import { formatDateTime, formatMoney, TRANSACTION_TYPE_LABELS } from '@/lib/format'
-import { StatusDot } from './StatusDot'
+import type { Transaction } from '@/types/api'
+import { Money } from '@/components/ui'
+import { cx } from '@/lib/cx'
+import { formatDateTime, formatTime, isCredit, TRANSACTION_TYPE_LABELS } from '@/lib/format'
+import { TransactionAvatar } from './TransactionAvatar'
+import { TransactionStatusBadge } from './TransactionStatusBadge'
 import styles from './TransactionRow.module.css'
-
-const TYPE_ICONS: Record<TransactionType, IconName> = {
-  deposit: 'arrow-down-left',
-  transfer_in: 'arrow-down-left',
-  withdrawal: 'arrow-up-right',
-  transfer_out: 'arrow-up-right',
-  conversion: 'swap',
-  card_payment: 'card',
-  bill_payment: 'receipt',
-}
-
-const CREDIT_TYPES: TransactionType[] = ['deposit', 'transfer_in', 'conversion']
 
 export interface TransactionRowProps {
   transaction: Transaction
   onSelect?: (transaction: Transaction) => void
+  /** Show the date as well as the time, for lists without day headings. */
+  showDate?: boolean
 }
 
-export function TransactionRow({ transaction: tx, onSelect }: TransactionRowProps) {
-  const isCredit = CREDIT_TYPES.includes(tx.type)
+export function TransactionRow({ transaction: tx, onSelect, showDate = false }: TransactionRowProps) {
+  const credit = isCredit(tx.type)
 
   return (
-    <button type="button" className={styles.row} onClick={() => onSelect?.(tx)}>
-      <span className={styles.icon}>
-        <Icon name={TYPE_ICONS[tx.type]} size={18} />
+    <button type="button" className={styles.row} onClick={() => onSelect?.(tx)} aria-haspopup="dialog">
+      <span className={styles.avatar}>
+        <TransactionAvatar transaction={tx} />
       </span>
       <span className={styles.main}>
         <span className={styles.title}>{TRANSACTION_TYPE_LABELS[tx.type]}</span>
+        {/* Upstream narration is unsanitised: always render it as text. */}
         <span className={styles.narration}>{tx.narration}</span>
       </span>
-      <StatusDot status={tx.status} />
-      <span className={styles.end}>
-        <Money
-          amount={tx.amount}
-          currency={tx.currency}
-          sign={isCredit ? 'credit' : 'debit'}
-          className={isCredit ? styles.credit : styles.amount}
-        />
-        <span className={styles.meta}>
-          {formatDateTime(tx.createdAt)}
-          {tx.fee > 0 && ` · Fee ${formatMoney(tx.fee, tx.currency)}`}
-        </span>
-      </span>
+      <TransactionStatusBadge status={tx.status} className={styles.status} />
+      <Money
+        amount={tx.amount}
+        currency={tx.currency}
+        sign={credit ? 'credit' : 'debit'}
+        className={cx(styles.amount, credit && styles.credit)}
+      />
+      <time className={styles.time} dateTime={tx.createdAt}>
+        {showDate ? formatDateTime(tx.createdAt) : formatTime(tx.createdAt)}
+      </time>
     </button>
   )
 }

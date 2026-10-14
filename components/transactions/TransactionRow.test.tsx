@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import type { Transaction } from '@/types/api'
 import { TransactionRow } from './TransactionRow'
 
@@ -23,8 +24,21 @@ describe('TransactionRow', () => {
     expect(screen.getByText(narration)).toBeInTheDocument()
   })
 
-  it('formats the fee in the transaction currency', () => {
-    render(<TransactionRow transaction={{ ...base, type: 'withdrawal', fee: 250 }} />)
-    expect(screen.getByText(/Fee \$2\.50/)).toBeInTheDocument()
+  it('shows a signed amount and a labelled status', () => {
+    render(<TransactionRow transaction={{ ...base, type: 'card_payment', status: 'pending' }} />)
+    expect(screen.getByText('-$45.99')).toBeInTheDocument()
+    expect(screen.getByText('Pending')).toBeInTheDocument()
+  })
+
+  it('marks money in as a credit', () => {
+    render(<TransactionRow transaction={{ ...base, type: 'deposit', currency: 'NGN', amount: 2500000 }} />)
+    expect(screen.getByText('+₦25,000.00')).toBeInTheDocument()
+  })
+
+  it('reports the selected transaction', async () => {
+    const onSelect = vi.fn()
+    render(<TransactionRow transaction={base} onSelect={onSelect} />)
+    await userEvent.click(screen.getByRole('button'))
+    expect(onSelect).toHaveBeenCalledWith(base)
   })
 })
