@@ -45,11 +45,15 @@
   min-width: 0;
 }
 
+/* One line, like the narration: on a 320px screen a wide amount leaves the title too narrow to wrap. */
 .title {
   display: block;
+  overflow: hidden;
   font-size: var(--text-md);
   font-weight: var(--weight-semibold);
   line-height: var(--leading-tight);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .narration {

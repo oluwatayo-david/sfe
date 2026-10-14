@@ -30,6 +30,13 @@
   overflow-wrap: anywhere;
 }
 
+/* At 28px the largest amounts (+₦2,499,999,999.99) wrap after the sign on the smallest phones. */
+@media (max-width: 360px) {
+  .amount {
+    font-size: var(--text-xl);
+  }
+}
+
 .sectionTitle {
   margin-bottom: var(--space-3);
   font-size: var(--text-xs);
