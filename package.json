@@ -17,6 +17,7 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
+    "@tanstack/react-query": "5.104.2",
     "next": "^16.4.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
@@ -33,6 +34,7 @@
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.4.0",
     "jsdom": "^29.1.1",
+    "msw": "2.15.0",
     "prettier": "^3.9.9",
     "typescript": "^5.9.3",
     "vitest": "^5.0.3"
