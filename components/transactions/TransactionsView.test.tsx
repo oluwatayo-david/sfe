@@ -149,6 +149,12 @@ describe('TransactionsView', () => {
     expect(await screen.findByText('2 transactions')).toBeInTheDocument()
   })
 
+  it('shows the error state when the network fails (fetch rejects)', async () => {
+    server.use(listHandler(() => HttpResponse.error()))
+    renderPage()
+    expect(await screen.findByRole('alert')).toHaveTextContent('Check your connection and try again.')
+  })
+
   it('shows the empty state when there are no transactions at all', async () => {
     server.use(
       listHandler(() =>
